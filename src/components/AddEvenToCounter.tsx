@@ -3,14 +3,20 @@ import { BN } from "@coral-xyz/anchor";
 import { FC, useCallback } from "react";
 import { notify } from "../utils/notifications";
 import { useCounter } from "contexts/CounterProvider";
+import useAnchorProgram from "hooks/useAnchorProgram";
 
-export const AddEvenToCounter: FC = () => {
-  const { program, counterKeypair, setCounterValue } = useCounter();
-  const { connection } = useConnection();
+interface AddEvenToCounterProps {
+  setCounterValue: (value: number) => void;
+}
+export const AddEvenToCounter: FC<AddEvenToCounterProps> = ({
+  setCounterValue,
+}) => {
+  const { counterAddress } = useCounter();
+  const program = useAnchorProgram();
   const wallet = useAnchorWallet();
 
   const onClick = useCallback(async () => {
-    if (!wallet.publicKey) {
+    if (!wallet.publicKey || !program) {
       notify({ type: "error", message: `Wallet not connected!` });
       console.log("error", `Send Transaction: Wallet not connected!`);
       return;
@@ -21,18 +27,12 @@ export const AddEvenToCounter: FC = () => {
       const txid = await program.methods
         .addEven(new BN(42))
         .accounts({
-          myCounter: counterKeypair.publicKey,
+          myCounter: counterAddress,
+          user: wallet.publicKey,
         })
         .rpc();
-
-      const myCounter = await program.account.myCounter.fetch(
-        counterKeypair.publicKey
-      );
-      console.log(myCounter);
-
-      setCounterValue(
-        myCounter && myCounter.value ? Number(myCounter.value) : -1
-      );
+      const myCounter = await program.account.myCounter.fetch(counterAddress);
+      setCounterValue(Number(myCounter.value));
 
       console.log(signature);
       notify({
@@ -50,7 +50,7 @@ export const AddEvenToCounter: FC = () => {
       console.log("error", `Transaction failed! ${error?.message}`, signature);
       return;
     }
-  }, [wallet, notify, connection]);
+  }, [wallet, notify, program]);
 
   return (
     <div className="flex flex-row justify-center">
@@ -62,7 +62,7 @@ export const AddEvenToCounter: FC = () => {
         <button
           className="group w-60 m-2 btn animate-pulse bg-gradient-to-br from-indigo-500 to-fuchsia-500 hover:from-white hover:to-purple-300 text-black"
           onClick={onClick}
-          disabled={!wallet.publicKey}
+          disabled={!wallet}
         >
           <div className="hidden group-disabled:block ">
             Wallet not connected

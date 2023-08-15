@@ -4,10 +4,16 @@ import { BN } from "@coral-xyz/anchor";
 import { FC, useCallback } from "react";
 import { notify } from "../utils/notifications";
 import { useCounter } from "contexts/CounterProvider";
+import useAnchorProgram from "hooks/useAnchorProgram";
 
-export const InitializeCounter: FC = () => {
-  const { program, counterKeypair, setCounterValue } = useCounter();
-  const { connection } = useConnection();
+interface InitializeCounterProps {
+  setCounterValue: (value: number) => void;
+}
+export const InitializeCounter: FC<InitializeCounterProps> = ({
+  setCounterValue,
+}) => {
+  const { counterAddress } = useCounter();
+  const program = useAnchorProgram();
   const wallet = useAnchorWallet();
 
   const onClick = useCallback(async () => {
@@ -23,21 +29,13 @@ export const InitializeCounter: FC = () => {
       const txid = await program.methods
         .initialize(new BN(1234))
         .accounts({
-          myCounter: counterKeypair.publicKey,
+          myCounter: counterAddress,
           user: wallet.publicKey,
           systemProgram: SystemProgram.programId,
         })
-        .signers([counterKeypair])
         .rpc();
-
-      const myCounter = await program.account.myCounter.fetch(
-        counterKeypair.publicKey
-      );
-      console.log(myCounter);
-
-      setCounterValue(
-        myCounter && myCounter.value ? Number(myCounter.value) : -1
-      );
+      const myCounter = await program.account.myCounter.fetch(counterAddress);
+      setCounterValue(Number(myCounter.value));
 
       console.log(signature);
       notify({
@@ -55,7 +53,7 @@ export const InitializeCounter: FC = () => {
       console.log("error", `Transaction failed! ${error?.message}`, signature);
       return;
     }
-  }, [wallet, notify, connection]);
+  }, [wallet, notify, program]);
 
   return (
     <div className="flex flex-row justify-center">
@@ -67,7 +65,7 @@ export const InitializeCounter: FC = () => {
         <button
           className="group w-60 m-2 btn animate-pulse bg-gradient-to-br from-indigo-500 to-fuchsia-500 hover:from-white hover:to-purple-300 text-black"
           onClick={onClick}
-          disabled={!wallet.publicKey}
+          disabled={!wallet}
         >
           <div className="hidden group-disabled:block ">
             Wallet not connected

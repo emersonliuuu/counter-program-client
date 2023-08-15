@@ -6,12 +6,10 @@ import { notify } from "../utils/notifications";
 import { useCounter } from "contexts/CounterProvider";
 import useAnchorProgram from "hooks/useAnchorProgram";
 
-interface MinusOddToCounterProps {
+interface CloseCounterProps {
   setCounterValue: (value: number) => void;
 }
-export const MinusOddToCounter: FC<MinusOddToCounterProps> = ({
-  setCounterValue,
-}) => {
+export const CloseCounter: FC<CloseCounterProps> = ({ setCounterValue }) => {
   const { counterAddress } = useCounter();
   const program = useAnchorProgram();
   const wallet = useAnchorWallet();
@@ -26,19 +24,23 @@ export const MinusOddToCounter: FC<MinusOddToCounterProps> = ({
     let signature: TransactionSignature = "";
     try {
       const txid = await program.methods
-        .minusOdd(new BN(69))
+        .close()
         .accounts({
           myCounter: counterAddress,
           user: wallet.publicKey,
         })
         .rpc();
-      const myCounter = await program.account.myCounter.fetch(counterAddress);
-      setCounterValue(Number(myCounter.value));
+      const myCounter = await program.account.myCounter.fetchNullable(
+        counterAddress
+      );
+      setCounterValue(
+        myCounter && myCounter.value ? Number(myCounter.value) : -1
+      );
 
       console.log(signature);
       notify({
         type: "success",
-        message: "Minus odd transaction successful!",
+        message: "Close counter transaction successful!",
         txid,
       });
     } catch (error: any) {
@@ -68,7 +70,7 @@ export const MinusOddToCounter: FC<MinusOddToCounterProps> = ({
           <div className="hidden group-disabled:block ">
             Wallet not connected
           </div>
-          <span className="block group-disabled:hidden">Minus 69</span>
+          <span className="block group-disabled:hidden">Close Counter</span>
         </button>
       </div>
     </div>

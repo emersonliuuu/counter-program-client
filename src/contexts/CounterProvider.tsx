@@ -1,22 +1,11 @@
-import { AnchorProvider, Idl, Program } from "@coral-xyz/anchor";
+import { AnchorProvider, Idl, Program, utils } from "@coral-xyz/anchor";
 import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
-import { Keypair } from "@solana/web3.js";
-import { MyProgram } from "idl/my_program";
+import { PublicKey } from "@solana/web3.js";
 import idlFile from "../idl/my_program.json";
-import {
-  createContext,
-  FC,
-  ReactNode,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, FC, ReactNode, useContext } from "react";
 
 export interface CounterContextState {
-  counterKeypair: Keypair;
-  counterValue: number;
-  program: Program<MyProgram> | null;
-  setCounterValue: (value: number) => void;
+  counterAddress: PublicKey;
 }
 
 export const CounterContext = createContext<CounterContextState>(
@@ -28,25 +17,22 @@ export function useCounter(): CounterContextState {
 }
 
 export const CounterProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  const { connection } = useConnection();
-  const [counterValue, setCounterValue] = useState(-1);
-  const counterKeypair = Keypair.generate();
   const wallet = useAnchorWallet();
-  const [program, setProgram] = useState<Program<MyProgram> | null>(null);
-
   const idl = idlFile as Idl;
 
-  useEffect(() => {
-    if (wallet) {
-      const provider = new AnchorProvider(connection, wallet, {});
-      const programInstance = new Program(idl, idl.metadata.address, provider);
-      setProgram(programInstance as unknown as Program<MyProgram>);
-    }
-  }, [wallet, connection, idl]);
+  const counterAddress = PublicKey.findProgramAddressSync(
+    [
+      utils.bytes.utf8.encode("my-counter"),
+      (wallet ? wallet.publicKey : PublicKey.default).toBuffer(),
+    ],
+    new PublicKey(idl.metadata.address)
+  )[0];
 
   return (
     <CounterContext.Provider
-      value={{ counterKeypair, counterValue, program, setCounterValue }}
+      value={{
+        counterAddress,
+      }}
     >
       {children}
     </CounterContext.Provider>
