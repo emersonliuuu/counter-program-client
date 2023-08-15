@@ -8,7 +8,7 @@ export type MyProgram = {
         {
           "name": "myCounter",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "user",
@@ -35,6 +35,11 @@ export type MyProgram = {
           "name": "myCounter",
           "isMut": true,
           "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": false,
+          "isSigner": true
         }
       ],
       "args": [
@@ -51,6 +56,11 @@ export type MyProgram = {
           "name": "myCounter",
           "isMut": true,
           "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": false,
+          "isSigner": true
         }
       ],
       "args": [
@@ -59,6 +69,22 @@ export type MyProgram = {
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "close",
+      "accounts": [
+        {
+          "name": "myCounter",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -70,6 +96,10 @@ export type MyProgram = {
           {
             "name": "value",
             "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
           }
         ]
       }
@@ -99,7 +129,7 @@ export const IDL: MyProgram = {
         {
           "name": "myCounter",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "user",
@@ -126,6 +156,11 @@ export const IDL: MyProgram = {
           "name": "myCounter",
           "isMut": true,
           "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": false,
+          "isSigner": true
         }
       ],
       "args": [
@@ -142,6 +177,11 @@ export const IDL: MyProgram = {
           "name": "myCounter",
           "isMut": true,
           "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": false,
+          "isSigner": true
         }
       ],
       "args": [
@@ -150,6 +190,22 @@ export const IDL: MyProgram = {
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "close",
+      "accounts": [
+        {
+          "name": "myCounter",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -161,6 +217,10 @@ export const IDL: MyProgram = {
           {
             "name": "value",
             "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
           }
         ]
       }
